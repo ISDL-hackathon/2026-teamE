@@ -9,14 +9,27 @@
 //     404 なら「今週の割り当てはまだありません」を表示してもよい
 // 使うもの: useNavigate (react-router-dom)
 // ============================================================
-
+import { useNavigate } from "react-router-dom";
 export default function RandomIntro() {
   // TODO: 実装する
+  const navigate = useNavigate();
+
   return (
     <div className="p-6 text-center">
-      <h1 className="text-2xl font-bold text-primary mb-8">ランダムマッチング</h1>
-      <p className="text-lg mb-8">その週に話しかける対象の学部4年生は・・・</p>
-      <p className="text-gray-400">TODO: メンバー3が実装する（結果を見るボタン）</p>
+      <h1 className="text-2xl font-bold text-primary mb-8">
+        ランダムマッチング
+      </h1>
+
+      <p className="text-lg mb-8">
+        その週に話しかける対象の学部4年生は・・・
+      </p>
+
+      <button
+        onClick={() => navigate("/random/result")}
+        className="bg-primary text-white px-6 py-3 rounded-lg hover:opacity-90"
+      >
+        結果を見る
+      </button>
     </div>
   );
 }
