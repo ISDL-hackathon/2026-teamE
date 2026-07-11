@@ -12,8 +12,35 @@ import { supabase } from "../lib/supabase.js";
  * エラー: 404 ユーザーが存在しない
  */
 export async function getMe(req, res) {
-  // TODO: 実装する
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("id, name, email, role, bio, avatar_url, created_at")
+      .eq("id", req.user.id)
+      .maybeSingle();
+
+    if (error) {
+      return res.status(500).json({
+        error: error.message,
+      });
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        error: "ユーザーが見つかりません",
+      });
+    }
+
+    return res.status(200).json({
+      user,
+    });
+  } catch (error) {
+    console.error("getMe error:", error);
+
+    return res.status(500).json({
+      error: "ユーザー情報の取得に失敗しました",
+    });
+  }
 }
 
 /**
@@ -24,6 +51,66 @@ export async function getMe(req, res) {
  * エラー: 400 入力不備
  */
 export async function updateProfile(req, res) {
-  // TODO: 実装する
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const { name, bio, avatar_url } = req.body;
+
+    // 更新対象だけを入れる
+    const updates = {};
+
+    if (name !== undefined) {
+      const trimmedName = name.trim();
+
+      if (!trimmedName) {
+        return res.status(400).json({
+          error: "名前を空にはできません",
+        });
+      }
+
+      updates.name = trimmedName;
+    }
+
+    if (bio !== undefined) {
+      updates.bio = bio;
+    }
+
+    if (avatar_url !== undefined) {
+      updates.avatar_url = avatar_url;
+    }
+
+    // name / bio / avatar_url が1つも送られていない場合
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        error: "更新する項目がありません",
+      });
+    }
+
+    const { data: user, error } = await supabase
+      .from("users")
+      .update(updates)
+      .eq("id", req.user.id)
+      .select("id, name, email, role, bio, avatar_url, created_at")
+      .maybeSingle();
+
+    if (error) {
+      return res.status(500).json({
+        error: error.message,
+      });
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        error: "ユーザーが見つかりません",
+      });
+    }
+
+    return res.status(200).json({
+      user,
+    });
+  } catch (error) {
+    console.error("updateProfile error:", error);
+
+    return res.status(500).json({
+      error: "プロフィールの更新に失敗しました",
+    });
+  }
 }
