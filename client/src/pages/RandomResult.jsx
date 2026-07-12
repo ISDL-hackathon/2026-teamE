@@ -18,6 +18,7 @@ export default function RandomResult() {
   const [assignment, setAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     loadAssignment();
@@ -30,13 +31,18 @@ export default function RandomResult() {
     } catch (err) {
       if (err.status === 404) {
         setNotFound(true);
+      } else if (err.status === 403) {
+        setForbidden(true); // または専用メッセージを表示
       } else {
         console.error(err);
       }
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   }
+
+
 
   async function markDone() {
     try {
@@ -61,48 +67,79 @@ export default function RandomResult() {
 
   if (notFound) {
     return (
+          <div className="min-h-screen px-6 py-10">
+      <div className="mx-auto max-w-3xl">
+
+        <h1 className="mb-10 bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-center text-5xl font-extrabold text-transparent">
+          今週の相手
+        </h1>
+
+        <div className="rounded-3xl border border-slate-700 bg-slate-900/40 p-10 text-center shadow-xl">
+          <div className="mb-6 text-6xl">🎲</div>
+
+          <p className="text-2xl font-bold text-white">
+            今週の相手はまだいません
+          </p>
+
+          <p className="mt-4 text-slate-400">
+            ランダムマッチングが実行されるまでお待ちください。
+          </p>
+        </div>
+
+      </div>
+    </div>
+    );
+  }
+  if (forbidden) {
+    return (
       <div className="p-6 text-center">
-        今週の割り当てはまだありません。
+        この機能はB4ユーザーは利用できません。
       </div>
     );
   }
 
   return (
-    <div className="p-6 text-center">
+    <div className="min-h-screen px-6 py-10">
+  <div className="mx-auto max-w-3xl">
 
-      <h1 className="text-2xl font-bold text-primary mb-8">
-        今週の相手
-      </h1>
+    <h1 className="mb-10 bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-center text-5xl font-extrabold text-transparent">
+      今週の相手
+    </h1>
+
+    <div className="rounded-3xl border border-slate-700 bg-slate-900/40 p-10 text-center shadow-xl">
 
       {assignment.b4.avatar_url && (
         <img
           src={assignment.b4.avatar_url}
           alt={assignment.b4.name}
-          className="w-32 h-32 rounded-full mx-auto mb-4"
+          className="mx-auto mb-6 h-36 w-36 rounded-full border-4 border-indigo-400 object-cover"
         />
       )}
 
-      <h2 className="text-3xl font-bold mb-2">
+      <h2 className="mb-4 text-4xl font-bold text-white">
         {assignment.b4.name}
       </h2>
 
-      <p className="mb-6">
+      <p className="mb-8 text-slate-300">
         {assignment.b4.bio}
       </p>
 
       {assignment.status === "ASSIGNED" ? (
         <button
           onClick={markDone}
-          className="bg-primary text-white px-6 py-3 rounded-lg"
+          className="rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 px-10 py-4 text-xl font-bold text-white"
         >
           話しました
         </button>
       ) : (
-        <p className="text-green-600 font-bold">
+        <p className="text-2xl font-bold text-green-400">
           話しました ✓
         </p>
       )}
 
     </div>
+
+  </div>
+</div>
   );
 }

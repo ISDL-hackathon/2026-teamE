@@ -15,21 +15,25 @@ export default function RandomIntro() {
   const navigate = useNavigate();
 
   return (
-    <div className="p-6 text-center">
-      <h1 className="text-2xl font-bold text-primary mb-8">
-        ランダムマッチング
-      </h1>
+<div className="min-h-screen px-6 py-10">
+  <div className="mx-auto max-w-3xl">
+    <h1 className="mb-12 bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-center text-5xl font-extrabold text-transparent">
+      ランダムマッチング
+    </h1>
 
-      <p className="text-lg mb-8">
-        その週に話しかける対象の学部4年生は・・・
+    <div className="rounded-3xl border border-slate-700 bg-slate-900/40 p-10 text-center shadow-xl">
+      <p className="mb-10 text-2xl text-slate-200">
+        今週話しかける学部4年生は・・・
       </p>
 
       <button
         onClick={() => navigate("/random/result")}
-        className="bg-primary text-white px-6 py-3 rounded-lg hover:opacity-90"
+        className="rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 px-10 py-4 text-xl font-bold text-white"
       >
         結果を見る
       </button>
     </div>
+  </div>
+</div>
   );
 }
