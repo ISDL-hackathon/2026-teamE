@@ -21,8 +21,107 @@ import { supabase } from "../lib/supabase.js";
  * 例外: DB エラー時は throw（呼び出し側で 500 にする）
  */
 export async function runWeeklyAssignment(week_key) {
-  // TODO: 実装する
-  throw new Error("Not implemented");
+
+  // 院生・先生を取得
+  const { data: seniors, error: seniorError } = await supabase
+    .from("users")
+    .select("id")
+    .in("role", ["M1", "M2", "FACULTY"]);
+
+  if (seniorError) throw seniorError;
+
+  // B4を取得
+  const { data: b4s, error: b4Error } = await supabase
+    .from("users")
+    .select("id")
+    .eq("role", "B4");
+
+  if (b4Error) throw b4Error;
+
+  // B4がいない場合
+  if (!b4s || b4s.length === 0) {
+
+    for (const senior of seniors) {
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: senior.id,
+          type: "SYSTEM",
+          message: "今週は対象者がいません。"
+        });
+    }
+
+    return [];
+  }
+
+  // ランダム化
+  const shuffled = [...b4s].sort(() => Math.random() - 0.5);
+
+  const used = new Set();
+  const results = [];
+
+  for (const senior of seniors) {
+
+    // 各B4の評価
+    const candidateScores = await Promise.all(
+      shuffled.map(async (b4) => ({
+        b4,
+        count: await pastPairCount(senior.id, b4.id),
+        used: used.has(b4.id),
+        random: Math.random()
+      }))
+    );
+
+    // 優先順位
+    candidateScores.sort((a, b) => {
+
+      // ① 過去に組んだ回数
+      if (a.count !== b.count) {
+        return a.count - b.count;
+      }
+
+      // ② 今週まだ使われていない
+      if (a.used !== b.used) {
+        return a.used ? 1 : -1;
+      }
+
+      // ③ ランダム
+      return a.random - b.random;
+    });
+
+    const pick = candidateScores[0].b4;
+
+    used.add(pick.id);
+
+    const { data, error } = await supabase
+      .from("random_assignments")
+      .upsert(
+        {
+          senior_id: senior.id,
+          b4_id: pick.id,
+          week_key
+        },
+        {
+          onConflict: "senior_id,week_key"
+        }
+      )
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    results.push(data);
+
+    await supabase
+      .from("notifications")
+      .insert({
+        user_id: senior.id,
+        type: "RANDOM",
+        message: "今週の話し相手が決まりました！"
+      });
+  }
+
+  return results;
 }
 
 /**
@@ -32,5 +131,15 @@ export async function runWeeklyAssignment(week_key) {
  */
 export async function pastPairCount(senior_id, b4_id) {
   // TODO: 実装する
-  throw new Error("Not implemented");
+    const { count, error } = await supabase
+    .from("random_assignments")
+    .select("*", { count: "exact", head: true })
+    .eq("senior_id", senior_id)
+    .eq("b4_id", b4_id);
+
+  if (error) {
+    throw error;
+  }
+
+  return count ?? 0;
 }

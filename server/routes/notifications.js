@@ -13,7 +13,16 @@ import { supabase } from "../lib/supabase.js";
  */
 export async function getNotifications(req, res) {
   // TODO: 実装する
-  res.status(501).json({ error: "Not implemented" });
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", req.user.id)
+    .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
 }
 
 /**
@@ -24,5 +33,34 @@ export async function getNotifications(req, res) {
  */
 export async function markNotificationRead(req, res) {
   // TODO: 実装する
-  res.status(501).json({ error: "Not implemented" });
+  const { id } = req.params;
+
+  // 通知を取得
+  const { data: notification, error } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", req.user.id)
+    .maybeSingle();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!notification) {
+    return res.status(404).json({ error: "Notification not found" });
+  }
+
+  // 既読に更新
+  const { data, error: updateError } = await supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (updateError) {
+    return res.status(500).json({ error: updateError.message });
+  }
+  
 }

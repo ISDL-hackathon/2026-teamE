@@ -22,8 +22,46 @@ import { currentWeekKey } from "./matching.js"; // week_key ユーティリテ�
  */
 export async function getCurrentAssignment(req, res) {
   // TODO: 実装する
-  res.status(501).json({ error: "Not implemented" });
+if (req.user.role === "B4") {
+    return res.status(403).json({ error: "B4 users cannot view assignments" });
+  }
+
+  const week_key = currentWeekKey();
+
+  // 今週の割り当てを取得
+  const { data: assignment, error } = await supabase
+    .from("random_assignments")
+    .select("*")
+    .eq("senior_id", req.user.id)
+    .eq("week_key", week_key)
+    .maybeSingle();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!assignment) {
+    return res.status(404).json({ error: "今週の割り当てはありません" });
+  }
+
+  // B4の情報を取得
+  const { data: b4, error: userError } = await supabase
+    .from("users")
+    .select("id, name, bio, avatar_url")
+    .eq("id", assignment.b4_id)
+    .single();
+
+  if (userError) {
+    return res.status(500).json({ error: userError.message });
+  }
+
+  res.json({
+    b4,
+    week_key: assignment.week_key,
+    status: assignment.status,
+  });
 }
+
 
 /**
  * POST /api/v1/random/current/done — 「話しました」完了報告
@@ -34,7 +72,25 @@ export async function getCurrentAssignment(req, res) {
  */
 export async function markAssignmentDone(req, res) {
   // TODO: 実装する
-  res.status(501).json({ error: "Not implemented" });
+   const week_key = currentWeekKey();
+
+  const { data, error } = await supabase
+    .from("random_assignments")
+    .update({ status: "DONE" })
+    .eq("senior_id", req.user.id)
+    .eq("week_key", week_key)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: "今週の割り当てがありません" });
+  }
+
+  res.json({ status: "DONE" });
 }
 
 /**
@@ -45,6 +101,14 @@ export async function markAssignmentDone(req, res) {
  *       生成ロジック本体は weeklyAssignment.js に書く。
  */
 export async function generateAssignments(req, res) {
-  // TODO: 実装する
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const week_key = req.body.week_key ?? currentWeekKey();
+
+    const assignments = await runWeeklyAssignment(week_key);
+
+    res.json({ assignments });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }
+
