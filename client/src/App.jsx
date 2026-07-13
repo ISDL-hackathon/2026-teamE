@@ -17,7 +17,7 @@
 //   /chats          チャット一覧（メンバー4）
 //   /chats/:matchId トークルーム（メンバー4）
 // ============================================================
-import { Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, Link, useLocation, useNavigate } from "react-router-dom";
 import { getSessionUser } from "./lib/api.js";
 
 import Login from "./pages/Login.jsx";
@@ -38,6 +38,17 @@ function RequireLogin({ children }) {
   return children;
 }
 
+/** B4 はランダムマッチングを利用しない */
+function RequireRandomAccess({ children }) {
+  const user = getSessionUser();
+
+  if (user?.role === "B4") {
+    return <Navigate to="/swipe" replace />;
+  }
+
+  return children;
+}
+
 /** トップ: role で分岐（完成済み） */
 function Top() {
   const user = getSessionUser();
@@ -48,23 +59,49 @@ function Top() {
 /** 画面下部の共通ナビゲーション（完成済み） */
 function BottomNav() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const user = getSessionUser();
+
   if (!user || pathname === "/login" || pathname === "/signup") return null;
+
   const item = "flex-1 py-3 text-center text-sm";
   const active = "text-primary font-bold";
+  const inactive = "text-slate-700";
+
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex">
-      <Link to="/" className={`${item} ${pathname === "/" || pathname === "/swipe" ? active : ""}`}>ホーム</Link>
-      <Link to="/chats" className={`${item} ${pathname.startsWith("/chats") ? active : ""}`}>チャット</Link>
-      <Link to="/notifications" className={`${item} ${pathname === "/notifications" ? active : ""}`}>通知</Link>
-      <Link to="/profile" className={`${item} ${pathname === "/profile" ? active : ""}`}>プロフィール</Link>
+    <nav className="fixed bottom-0 left-1/2 z-30 flex w-full max-w-lg -translate-x-1/2 border-t bg-white">
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className={`${item} ${inactive}`}
+      >
+        戻る
+      </button>
+
+      <Link
+        to="/"
+        className={`${item} ${
+          pathname === "/" || pathname === "/swipe" ? active : inactive
+        }`}
+      >
+        ホーム
+      </Link>
+
+      <Link
+        to="/notifications"
+        className={`${item} ${
+          pathname === "/notifications" ? active : inactive
+        }`}
+      >
+        通知
+      </Link>
     </nav>
   );
 }
 
 export default function App() {
   return (
-    <div className="max-w-md mx-auto min-h-screen pb-16">
+    <div className="max-w-md mx-auto min-h-[100dvh] pb-16">
       <Routes>
         {/* 認証（トークン不要） */}
         <Route path="/login" element={<Login />} />
@@ -73,8 +110,27 @@ export default function App() {
         {/* 以降は要ログイン */}
         <Route path="/" element={<RequireLogin><Top /></RequireLogin>} />
         <Route path="/swipe" element={<RequireLogin><SwipeScreen /></RequireLogin>} />
-        <Route path="/random" element={<RequireLogin><RandomIntro /></RequireLogin>} />
-        <Route path="/random/result" element={<RequireLogin><RandomResult /></RequireLogin>} />
+        <Route
+  path="/random"
+  element={
+    <RequireLogin>
+      <RequireRandomAccess>
+        <RandomIntro />
+      </RequireRandomAccess>
+    </RequireLogin>
+  }
+/>
+
+<Route
+  path="/random/result"
+  element={
+    <RequireLogin>
+      <RequireRandomAccess>
+        <RandomResult />
+      </RequireRandomAccess>
+    </RequireLogin>
+  }
+/>
         <Route path="/profile" element={<RequireLogin><Profile /></RequireLogin>} />
         <Route path="/notifications" element={<RequireLogin><Notifications /></RequireLogin>} />
         <Route path="/chats" element={<RequireLogin><ChatList /></RequireLogin>} />

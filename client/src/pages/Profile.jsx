@@ -99,7 +99,7 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen px-6 py-10">
+      <div className="min-h-[calc(100dvh-4rem)] px-6 py-10">
         <p className="text-center text-slate-400">
           プロフィールを読み込んでいます...
         </p>
@@ -108,7 +108,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-10">
+    <div className="min-h-[calc(100dvh-4rem)] px-6 py-10">
       <div className="mx-auto w-full max-w-xl">
         <div className="mb-8 text-center">
           <h1 className="bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-4xl font-extrabold text-transparent">

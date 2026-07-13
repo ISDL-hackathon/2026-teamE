@@ -67,7 +67,7 @@ export default function RandomResult() {
 
   if (notFound) {
     return (
-          <div className="min-h-screen px-6 py-10">
+          <div className="min-h-[calc(100dvh-4rem)] px-6 py-10">
       <div className="mx-auto max-w-3xl">
 
         <h1 className="mb-10 bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-center text-5xl font-extrabold text-transparent">
@@ -99,7 +99,7 @@ export default function RandomResult() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-10">
+    <div className="min-h-[calc(100dvh-4rem)] px-6 py-10">
   <div className="mx-auto max-w-3xl">
 
     <h1 className="mb-10 bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-center text-5xl font-extrabold text-transparent">
