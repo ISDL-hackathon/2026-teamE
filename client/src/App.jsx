@@ -17,8 +17,10 @@
 //   /chats          チャット一覧（メンバー4）
 //   /chats/:matchId トークルーム（メンバー4）
 // ============================================================
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, Link, useLocation, useNavigate } from "react-router-dom";
-import { getSessionUser } from "./lib/api.js";
+import { api, getSessionUser } from "./lib/api.js";
+import { ArrowLeft, Bell, House } from "./components/Icons.jsx";
 
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
@@ -59,49 +61,111 @@ function Top() {
 /** 画面下部の共通ナビゲーション（完成済み） */
 function BottomNav() {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const user = getSessionUser();
+const navigate = useNavigate();
+const user = getSessionUser();
+const userId = user?.id;
+const [unreadCount, setUnreadCount] = useState(0);
+
+useEffect(() => {
+  if (!userId) {
+    setUnreadCount(0);
+    return;
+  }
+
+  let cancelled = false;
+
+  async function loadUnreadCount() {
+    try {
+      const data = await api("GET", "/notifications");
+      const count = (data.notifications ?? []).filter(
+        (notification) => !notification.is_read
+      ).length;
+
+      if (!cancelled) {
+        setUnreadCount(count);
+      }
+    } catch (error) {
+      if (!cancelled) {
+        console.error("未読通知数の取得に失敗しました", error);
+      }
+    }
+  }
+
+  function refreshUnreadCount() {
+    void loadUnreadCount();
+  }
+
+  void loadUnreadCount();
+  window.addEventListener("notifications:changed", refreshUnreadCount);
+  window.addEventListener("focus", refreshUnreadCount);
+
+  const intervalId = window.setInterval(refreshUnreadCount, 30_000);
+
+  return () => {
+    cancelled = true;
+    window.removeEventListener("notifications:changed", refreshUnreadCount);
+    window.removeEventListener("focus", refreshUnreadCount);
+    window.clearInterval(intervalId);
+  };
+}, [userId]);
 
   if (!user || pathname === "/login" || pathname === "/signup") return null;
 
-  const item = "flex-1 py-3 text-center text-sm";
-  const active = "text-primary font-bold";
-  const inactive = "text-slate-700";
+  const homeIsActive =
+  pathname === "/" || (pathname === "/swipe" && user?.role === "B4");
 
-  return (
-    <nav className="fixed bottom-0 left-1/2 z-30 flex w-full max-w-lg -translate-x-1/2 border-t bg-white">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className={`${item} ${inactive}`}
-      >
-        戻る
-      </button>
+const item =
+  "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-semibold transition-colors";
+const active = "text-sky-400";
+const inactive = "text-slate-300 hover:text-white";
 
-      <Link
-        to="/"
-        className={`${item} ${
-          pathname === "/" || pathname === "/swipe" ? active : inactive
-        }`}
-      >
-        ホーム
-      </Link>
+return (
+  <nav className="fixed bottom-0 left-1/2 z-30 flex min-h-[72px] w-full max-w-lg -translate-x-1/2 border-t border-slate-700 bg-slate-950/95 shadow-[0_-8px_24px_rgba(2,6,23,0.45)] backdrop-blur">
+    <button
+      type="button"
+      onClick={() => navigate(-1)}
+      className={`${item} ${inactive}`}
+    >
+      <ArrowLeft size={27} strokeWidth={2.25} aria-hidden="true" />
+      <span>戻る</span>
+    </button>
 
-      <Link
-        to="/notifications"
-        className={`${item} ${
-          pathname === "/notifications" ? active : inactive
-        }`}
-      >
-        通知
-      </Link>
-    </nav>
+    <Link
+      to="/"
+      aria-current={homeIsActive ? "page" : undefined}
+      className={`${item} ${homeIsActive ? active : inactive}`}
+    >
+      <House size={27} strokeWidth={2.25} aria-hidden="true" />
+      <span>ホーム</span>
+    </Link>
+
+    <Link
+      to="/notifications"
+      aria-current={pathname === "/notifications" ? "page" : undefined}
+      className={`${item} ${
+        pathname === "/notifications" ? active : inactive
+      }`}
+    >
+      <span className="relative inline-flex">
+        <Bell size={27} strokeWidth={2.25} aria-hidden="true" />
+        {unreadCount > 0 && (
+          <span
+            aria-label={`未読 ${unreadCount} 件`}
+            className="absolute -right-3 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] leading-5 text-white"
+          >
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
+        )}
+      </span>
+      <span>通知</span>
+    </Link>
+  </nav>
   );
 }
 
 export default function App() {
   return (
-    <div className="max-w-md mx-auto min-h-[100dvh] pb-16">
+    <div className="max-w-md mx-auto min-h-[100dvh] pb-[72px]">
       <Routes>
         {/* 認証（トークン不要） */}
         <Route path="/login" element={<Login />} />

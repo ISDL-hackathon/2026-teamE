@@ -108,6 +108,15 @@ export async function getMatches(req, res) {
 
       return item;
     });
+    matches.sort((a, b) => {
+  const aLastActivityAt = a.last_message?.sent_at ?? a.matched_at;
+  const bLastActivityAt = b.last_message?.sent_at ?? b.matched_at;
+
+  return (
+    new Date(bLastActivityAt).getTime() -
+    new Date(aLastActivityAt).getTime()
+  );
+});
 
     return res.status(200).json({ matches });
   } catch (error) {
@@ -215,10 +224,31 @@ export async function sendMessage(req, res) {
       .single();
 
     if (insertError) {
-      return res.status(500).json({ error: insertError.message });
-    }
+  return res.status(500).json({ error: insertError.message });
+}
 
-    return res.status(201).json({ message });
+const recipientId =
+  match.user_a_id === req.user.id
+    ? match.user_b_id
+    : match.user_a_id;
+
+const { error: messageNotificationError } = await supabase
+  .from("notifications")
+  .insert({
+    user_id: recipientId,
+    actor_user_id: req.user.id,
+    match_id: match.id,
+    type: "MESSAGE",
+    message: "新しいメッセージが届きました。",
+  });
+
+if (messageNotificationError) {
+  return res.status(500).json({
+    error: messageNotificationError.message,
+  });
+}
+
+return res.status(201).json({ message });
   } catch (error) {
     console.error("sendMessage error:", error);
     return res.status(500).json({
