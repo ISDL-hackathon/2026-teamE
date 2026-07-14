@@ -13,9 +13,10 @@ const LIKE_LIMIT = 3;
 const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
 const SENIOR_ROLES = ["M1", "M2", "FACULTY"];
 
-/** 今週の week_key（ISO週, 例 "2026-W28"）を返すユーティリティ（完成済み） */
+/** 現在の土曜 00:00:00 JST を基準にした week_key を返す */
 export function currentWeekKey(date = new Date()) {
-  const jst = new Date(date.getTime() + JST_OFFSET_MS);
+  const weekStart = getSaturdayStartJst(date);
+  const jst = new Date(weekStart.getTime() + JST_OFFSET_MS);
   const d = new Date(
     Date.UTC(jst.getUTCFullYear(), jst.getUTCMonth(), jst.getUTCDate())
   );
@@ -28,22 +29,22 @@ export function currentWeekKey(date = new Date()) {
   return `${d.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
-/** 今週の月曜 00:00:00 JST を Date で返す */
-function getWeekStartJst(now = new Date()) {
+/** 直近の土曜 00:00:00 JST を Date で返す */
+function getSaturdayStartJst(now = new Date()) {
   const jst = new Date(now.getTime() + JST_OFFSET_MS);
-  const daysFromMonday = (jst.getUTCDay() + 6) % 7;
+  const daysFromSaturday = (jst.getUTCDay() + 1) % 7;
 
-  const mondayJstMs = Date.UTC(
+  const saturdayJstMs = Date.UTC(
     jst.getUTCFullYear(),
     jst.getUTCMonth(),
-    jst.getUTCDate() - daysFromMonday,
+    jst.getUTCDate() - daysFromSaturday,
     0,
     0,
     0,
     0
   );
 
-  return new Date(mondayJstMs - JST_OFFSET_MS);
+  return new Date(saturdayJstMs - JST_OFFSET_MS);
 }
 
 /** 指定ユーザーの今週の LIKE 件数を返す */
@@ -99,6 +100,19 @@ export async function getCandidates(req, res) {
       return res.status(500).json({ error: likesError.message });
     }
 
+    const { data: incomingLikes, error: incomingLikesError } =
+      await supabase
+        .from("likes")
+        .select("from_user_id, created_at")
+        .eq("to_user_id", req.user.id)
+        .eq("action", "LIKE");
+
+    if (incomingLikesError) {
+      return res.status(500).json({
+        error: incomingLikesError.message,
+      });
+    }
+
     const likedIds = new Set(
       (myLikes ?? [])
         .filter((like) => like.action === "LIKE")
@@ -111,12 +125,28 @@ export async function getCandidates(req, res) {
         .map((like) => like.to_user_id)
     );
 
+    const incomingLikeAtByUserId = new Map(
+      (incomingLikes ?? []).map((like) => [
+        like.from_user_id,
+        like.created_at,
+      ])
+    );
+
     const candidates = (users ?? [])
       .filter((user) => !likedIds.has(user.id))
-      .sort(
-        (a, b) =>
-          Number(heldIds.has(a.id)) - Number(heldIds.has(b.id))
-      );
+      .sort((a, b) => {
+        const aIncomingAt = incomingLikeAtByUserId.get(a.id);
+        const bIncomingAt = incomingLikeAtByUserId.get(b.id);
+
+        if (aIncomingAt && bIncomingAt) {
+          return bIncomingAt.localeCompare(aIncomingAt);
+        }
+
+        if (aIncomingAt) return -1;
+        if (bIncomingAt) return 1;
+
+        return Number(heldIds.has(a.id)) - Number(heldIds.has(b.id));
+      });
 
     return res.status(200).json({ candidates });
   } catch (error) {
@@ -177,7 +207,7 @@ export async function sendLike(req, res) {
       });
     }
 
-    const weekStart = getWeekStartJst();
+    const weekStart = getSaturdayStartJst();
 
     if (action === "LIKE") {
       const used = await countWeeklyLikes(req.user.id, weekStart);
@@ -188,6 +218,17 @@ export async function sendLike(req, res) {
         });
       }
     }
+
+    const { data: previousLike, error: previousLikeError } = await supabase
+  .from("likes")
+  .select("action")
+  .eq("from_user_id", req.user.id)
+  .eq("to_user_id", to_user_id)
+  .maybeSingle();
+
+if (previousLikeError) {
+  return res.status(500).json({ error: previousLikeError.message });
+}
 
     const { error: upsertError } = await supabase
       .from("likes")
@@ -206,6 +247,23 @@ export async function sendLike(req, res) {
     if (upsertError) {
       return res.status(500).json({ error: upsertError.message });
     }
+
+    if (action === "LIKE" && previousLike?.action !== "LIKE") {
+  const { error: likeNotificationError } = await supabase
+    .from("notifications")
+    .insert({
+      user_id: targetUser.id,
+      actor_user_id: req.user.id,
+      type: "LIKE",
+      message: "新しい「いいね」が届きました！",
+    });
+
+  if (likeNotificationError) {
+    return res.status(500).json({
+      error: likeNotificationError.message,
+    });
+  }
+}
 
     let match = null;
 
@@ -258,29 +316,35 @@ export async function sendLike(req, res) {
 
           match = createdMatch;
 
-          const { error: notificationError } = await supabase
-            .from("notifications")
-            .insert([
-              {
-                user_id: req.user.id,
-                type: "MATCH",
-                message: `${targetUser.name} さんとマッチしました！`,
-              },
-              {
-                user_id: targetUser.id,
-                type: "MATCH",
-                message: "新しいマッチが成立しました！",
-              },
-            ]);
+const { error: notificationError } = await supabase
+  .from("notifications")
+  .insert([
+    {
+      user_id: req.user.id,
+      actor_user_id: targetUser.id,
+      match_id: match.id,
+      type: "MATCH",
+      message: `${targetUser.name} さんとマッチしました！`,
+    },
+    {
+      user_id: targetUser.id,
+      actor_user_id: req.user.id,
+      match_id: match.id,
+      type: "MATCH",
+      message: "新しいマッチが成立しました！",
+    },
+  ]);
 
-          if (notificationError) {
-            return res.status(500).json({
-              error: notificationError.message,
-            });
-          }
+if (notificationError) {
+  return res.status(500).json({
+    error: notificationError.message,
+  });
+}
+
         }
       }
     }
+
 
     const used = await countWeeklyLikes(req.user.id, weekStart);
 
@@ -306,7 +370,7 @@ export async function getQuota(req, res) {
   try {
     const used = await countWeeklyLikes(
       req.user.id,
-      getWeekStartJst()
+      getSaturdayStartJst()
     );
 
     return res.status(200).json({

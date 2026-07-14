@@ -3,9 +3,9 @@ export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
-      colors: {
-        primary: "#B03060", // ISDLove テーマカラー
-      },
+     colors: {
+       primary: "#B03060", // ISDLove テーマカラー
+     },
     },
   },
   plugins: [],

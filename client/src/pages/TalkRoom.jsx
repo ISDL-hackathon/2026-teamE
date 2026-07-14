@@ -18,8 +18,22 @@
 // ============================================================
 
 import { useEffect, useState } from "react";
+import { Send } from "../components/Icons.jsx";
 import { useParams } from "react-router-dom";
 import { api, getSessionUser } from "../lib/api.js";
+
+function formatSentAt(sentAt) {
+  const date = new Date(sentAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
 
 export default function TalkRoom() {
   const { matchId } = useParams();
@@ -32,35 +46,60 @@ export default function TalkRoom() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    let cancelled = false;
+  let cancelled = false;
 
-    async function loadMessages() {
-      try {
-        const data = await api(
-          "GET",
-          `/matches/${matchId}/messages`
-        );
+  async function markMessageNotificationsAsRead() {
+    try {
+      const data = await api("GET", "/notifications");
 
-        if (!cancelled) {
-          setMessages(data.messages ?? []);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(
-            error.message || "メッセージの取得に失敗しました"
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+      const unreadMessageNotifications = (data.notifications ?? []).filter(
+        (notification) =>
+          notification.type === "MESSAGE" &&
+          notification.match_id === matchId &&
+          !notification.is_read
+      );
+
+      if (unreadMessageNotifications.length === 0) return;
+
+      await Promise.all(
+        unreadMessageNotifications.map((notification) =>
+          api("PUT", `/notifications/${notification.id}/read`)
+        )
+      );
+
+      if (!cancelled) {
+        window.dispatchEvent(new Event("notifications:changed"));
       }
+    } catch (error) {
+      console.error("メッセージ通知の既読化に失敗しました", error);
     }
+  }
 
-    loadMessages();
+  async function loadMessages() {
+    try {
+      const data = await api("GET", `/matches/${matchId}/messages`);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [matchId]);
+      if (cancelled) return;
+
+      setMessages(data.messages ?? []);
+      await markMessageNotificationsAsRead();
+    } catch (error) {
+      if (!cancelled) {
+        setErrorMessage(
+          error.message || "メッセージの取得に失敗しました"
+        );
+      }
+    } finally {
+      if (!cancelled) setLoading(false);
+    }
+  }
+
+  void loadMessages();
+
+  return () => {
+    cancelled = true;
+  };
+}, [matchId]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -91,7 +130,7 @@ export default function TalkRoom() {
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col p-6">
-      <h1 className="mb-4 text-2xl font-bold text-primary">
+      <h1 className="mb-4 bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-2xl font-bold text-transparent">
         トークルーム
       </h1>
 
@@ -114,21 +153,33 @@ export default function TalkRoom() {
 
             return (
               <div
-                key={message.id}
-                className={`flex ${
-                  isMine ? "justify-end" : "justify-start"
-                }`}
-              >
-               <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-3 whitespace-pre-wrap ${
-                    isMine
-                      ? "bg-primary text-white"
-                      : "bg-white text-slate-800"
-                  }`}
-                >
-                  {message.body}
-                </div>
-              </div>
+  key={message.id}
+  className={`flex items-end gap-2 ${
+    isMine ? "justify-end" : "justify-start"
+  }`}
+>
+  {isMine && (
+    <time
+      dateTime={message.sent_at}
+      className="shrink-0 text-xs text-slate-400"
+    >
+      {formatSentAt(message.sent_at)}
+    </time>
+  )}
+
+  <div className="max-w-[75%] whitespace-pre-wrap rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-white">
+  <p>{message.body}</p>
+</div>
+
+  {!isMine && (
+    <time
+      dateTime={message.sent_at}
+      className="shrink-0 text-xs text-slate-400"
+    >
+      {formatSentAt(message.sent_at)}
+    </time>
+  )}
+</div>
             );
           })
         )}
@@ -140,15 +191,17 @@ export default function TalkRoom() {
           onChange={(event) => setBody(event.target.value)}
           placeholder="メッセージを入力"
           disabled={isSending}
-          className="min-w-0 flex-1 rounded-xl border border-slate-500 bg-white px-4 py-3 text-slate-800 outline-none"
+          className="min-w-0 flex-1 rounded-full border border-slate-700 bg-slate-900/80 px-4 py-3 text-white placeholder:text-slate-400 outline-none focus:border-sky-400"
         />
         <button
-          type="submit"
-          disabled={isSending || !body.trim()}
-          className="rounded-xl bg-primary px-5 py-3 font-bold text-white disabled:opacity-50"
-        >
-          送信
-        </button>
+  type="submit"
+  disabled={isSending || !body.trim()}
+  aria-label="送信"
+  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 via-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-950/60 transition hover:scale-105 disabled:opacity-50"
+>
+  <Send size={23} strokeWidth={2.4} aria-hidden="true" />
+  <span className="sr-only">送信</span>
+</button>
       </form>
     </div>
   );

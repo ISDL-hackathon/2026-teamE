@@ -132,9 +132,9 @@ export default function Profile() {
                 className="h-28 w-28 rounded-full border border-slate-600 object-cover"
               />
             ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-3xl font-bold text-slate-300">
-                {name ? name.charAt(0) : "?"}
-              </div>
+              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-slate-600 bg-gradient-to-br from-fuchsia-400 via-violet-500 to-indigo-500 text-3xl font-bold text-white">
+  {name ? name.charAt(0) : "?"}
+</div>
             )}
           </div>
 
@@ -202,8 +202,9 @@ export default function Profile() {
               value={bio}
               onChange={(event) => setBio(event.target.value)}
               rows={5}
+              wrap="soft"
               placeholder="研究内容や趣味などを書いてください"
-              className="w-full resize-none rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-400"
+              className="w-full resize-none overflow-x-hidden break-words rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-400"
             />
           </div>
 

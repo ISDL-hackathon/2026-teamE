@@ -62,61 +62,48 @@ export default function SwipeCard({ user, onSwipeRight, onSwipeLeft }) {
   }
 
   return (
-    <div className="relative w-full">
-     <button
-  type="button"
-  onClick={onSwipeLeft}
-  aria-label="保留にする"
-  title="保留"
-  className="absolute -left-7 top-1/2 z-10 flex h-40 w-11 -translate-y-1/2 shrink-0 items-center justify-center rounded-2xl border border-slate-300 bg-white px-1 text-xs font-bold text-slate-700 shadow [writing-mode:vertical-rl] [text-orientation:upright]"
->
-  保留
-</button>
+  <div className="w-full">
+    <article
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={resetDrag}
+      style={{
+        transform: `translateX(${dragX}px) rotate(${dragX / 25}deg)`,
+        transition: isDragging ? "none" : "transform 180ms ease-out",
+      }}
+      className="relative mx-auto max-h-[390px] w-full cursor-grab select-none touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-3xl border border-slate-700 bg-slate-950/80 p-6 text-slate-100 shadow-2xl shadow-indigo-950/50 ring-1 ring-fuchsia-400/40 before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-sky-400 before:via-violet-500 before:to-pink-500 active:cursor-grabbing"
+    >
+     <div className="mb-6 flex items-center gap-4">
+        {user.avatar_url ? (
+  <img
+    src={user.avatar_url}
+    alt={`${user.name} のプロフィール画像`}
+    className="h-20 w-20 rounded-full border-2 border-violet-300/70 object-cover shadow-lg shadow-violet-950/60"
+  />
+) : (
+  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-400 via-violet-500 to-indigo-500 text-3xl font-bold text-white shadow-lg shadow-violet-950/60">
+  {user.name?.slice(0, 1)}
+</div>
+)}
 
-      <article
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={resetDrag}
-        style={{
-          transform: `translateX(${dragX}px) rotate(${dragX / 25}deg)`,
-          transition: isDragging ? "none" : "transform 180ms ease-out",
-        }}
-        className="mx-auto w-[calc(100%-7.5rem)] cursor-grab select-none touch-pan-y rounded-2xl bg-white p-6 text-slate-800 shadow-lg active:cursor-grabbing"
-      >
-        <div className="mb-5 flex items-center gap-4">
-          {user.avatar_url ? (
-            <img
-              src={user.avatar_url}
-              alt={`${user.name} のプロフィール画像`}
-              className="h-16 w-16 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white">
-              {user.name?.slice(0, 1)}
-            </div>
-          )}
+        <div>
+  <h2 className="text-2xl font-bold text-white">{user.name}</h2>
+  <p className="mt-1 text-sm font-semibold uppercase tracking-widest text-slate-400">
+    {user.role}
+  </p>
+</div>
+      </div>
 
-          <div>
-            <h2 className="text-xl font-bold">{user.name}</h2>
-            <p className="text-sm text-slate-500">{user.role}</p>
-          </div>
-        </div>
-
-        <p className="min-h-24 whitespace-pre-wrap text-slate-700">
-          {user.bio || "自己紹介はまだありません。"}
-        </p>
-      </article>
-
-      <button
-  type="button"
-  onClick={onSwipeRight}
-  aria-label="いいねする"
-  title="いいね"
- className="absolute -right-7 top-1/2 z-10 flex h-40 w-11 -translate-y-1/2 shrink-0 items-center justify-center rounded-2xl bg-pink-500 px-1 text-xs font-bold text-white shadow [writing-mode:vertical-rl] [text-orientation:upright]"
->
-  いいね
-</button>
-    </div>
-  );
+      <div className="border-t border-slate-700 pt-4">
+  <p className="mb-2 text-sm font-semibold tracking-wide text-sky-300">
+    自己紹介
+  </p>
+  <p className="min-h-[4.0rem] whitespace-pre-wrap break-words leading-6 text-slate-200">
+    {user.bio || "自己紹介はまだありません。"}
+  </p>
+</div>
+    </article>
+  </div>
+);
 }
