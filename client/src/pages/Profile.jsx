@@ -99,7 +99,7 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen px-6 py-10">
+      <div className="min-h-[calc(100dvh-4rem)] px-6 py-10">
         <p className="text-center text-slate-400">
           プロフィールを読み込んでいます...
         </p>
@@ -108,7 +108,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-10">
+    <div className="min-h-[calc(100dvh-4rem)] px-6 py-10">
       <div className="mx-auto w-full max-w-xl">
         <div className="mb-8 text-center">
           <h1 className="bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-4xl font-extrabold text-transparent">
@@ -132,9 +132,9 @@ export default function Profile() {
                 className="h-28 w-28 rounded-full border border-slate-600 object-cover"
               />
             ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-3xl font-bold text-slate-300">
-                {name ? name.charAt(0) : "?"}
-              </div>
+              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-slate-600 bg-gradient-to-br from-fuchsia-400 via-violet-500 to-indigo-500 text-3xl font-bold text-white">
+  {name ? name.charAt(0) : "?"}
+</div>
             )}
           </div>
 
@@ -202,8 +202,9 @@ export default function Profile() {
               value={bio}
               onChange={(event) => setBio(event.target.value)}
               rows={5}
+              wrap="soft"
               placeholder="研究内容や趣味などを書いてください"
-              className="w-full resize-none rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-400"
+              className="w-full resize-none overflow-x-hidden break-words rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-400"
             />
           </div>
 

@@ -51,7 +51,9 @@ export default function ChatList() {
 
   return (
     <div className="p-6">
-      <h1 className="mb-4 text-2xl font-bold text-primary">チャット</h1>
+      <h1 className="mb-4 bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-2xl font-bold text-transparent">
+  チャット
+</h1>
 
       {loading && <p className="text-slate-300">読み込んでいます...</p>}
 
@@ -73,7 +75,7 @@ export default function ChatList() {
             key={match.id}
             type="button"
             onClick={() => navigate(`/chats/${match.id}`)}
-            className="flex w-full items-center gap-4 rounded-2xl bg-white p-4 text-left text-slate-800 shadow"
+            className="flex w-full items-center gap-4 rounded-2xl border border-slate-700 bg-slate-900/80 p-4 text-left text-white shadow-lg transition hover:bg-slate-800/90"
           >
             {match.partner?.avatar_url ? (
               <img
@@ -82,18 +84,18 @@ export default function ChatList() {
                 className="h-12 w-12 rounded-full object-cover"
               />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary font-bold text-white">
-                {match.partner?.name?.slice(0, 1) ?? "?"}
-              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-400 via-violet-500 to-indigo-500 font-bold text-white">
+  {match.partner?.name?.slice(0, 1) ?? "?"}
+</div>
             )}
 
             <div className="min-w-0">
               <p className="font-bold">
                 {match.partner?.name ?? "不明なユーザー"}
               </p>
-              <p className="text-sm text-slate-500">
-                {match.last_message?.body ?? "まだメッセージはありません"}
-              </p>
+              <p className="text-sm text-slate-400">
+  {match.last_message?.body ?? "まだメッセージはありません"}
+</p>
             </div>
           </button>
         ))}

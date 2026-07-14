@@ -8,21 +8,41 @@ import { supabase } from "../lib/supabase.js";
 /**
  * GET /api/v1/notifications — 履歴・通知一覧
  * 入力: なし
- * 出力: 200 { notifications: [{ id, type: "MATCH"|"RANDOM"|"SYSTEM",
- *             message, is_read, created_at }] }  // 新しい順
+ * 出力: 200 {
+ *   notifications: [{
+ *     id,
+ *     type: "MATCH"|"RANDOM"|"SYSTEM"|"LIKE"|"MESSAGE",
+ *     message,
+ *     is_read,
+ *     created_at,
+ *     actor_user_id,
+ *     match_id
+ *   }]
+ * }  // 新しい順
  */
+
 export async function getNotifications(req, res) {
-  // TODO: 実装する
-  const { data, error } = await supabase
-    .from("notifications")
-    .select("*")
-    .eq("user_id", req.user.id)
-    .order("created_at", { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select(
+        "id, type, message, is_read, created_at, actor_user_id, match_id"
+      )
+      .eq("user_id", req.user.id)
+      .order("created_at", { ascending: false });
 
     if (error) {
       return res.status(500).json({ error: error.message });
     }
 
+    return res.status(200).json({
+      notifications: data ?? [],
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "通知の取得に失敗しました",
+    });
+  }
 }
 
 /**
@@ -53,14 +73,19 @@ export async function markNotificationRead(req, res) {
 
   // 既読に更新
   const { data, error: updateError } = await supabase
-    .from("notifications")
-    .update({ is_read: true })
-    .eq("id", id)
-    .select()
-    .single();
+  .from("notifications")
+  .update({ is_read: true })
+  .eq("id", id)
+  .eq("user_id", req.user.id)
+  .select(
+    "id, type, message, is_read, created_at, actor_user_id, match_id"
+  )
+  .single();
 
-  if (updateError) {
-    return res.status(500).json({ error: updateError.message });
-  }
+if (updateError) {
+  return res.status(500).json({ error: updateError.message });
+}
+
+return res.status(200).json({ notification: data });
   
 }

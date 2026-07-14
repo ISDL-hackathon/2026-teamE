@@ -9,7 +9,7 @@ import { getSessionUser } from "../lib/api.js";
 export default function TopSenior() {
   const user = getSessionUser();
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-[calc(100vh-4rem)] space-y-6 px-6 pb-24 pt-6">
       <h1 className="text-2xl font-bold text-primary">ISDLove</h1>
       <p className="text-gray-600">こんにちは、{user?.name} さん</p>
 
@@ -26,6 +26,12 @@ export default function TopSenior() {
       >
         ランダムマッチング
       </Link>
+      <Link
+  to="/chats"
+  className="fixed bottom-20 left-1/2 z-10 w-[calc(100%-3rem)] max-w-sm -translate-x-1/2 rounded-xl bg-gray-500 px-4 py-3 text-center font-bold text-white shadow-lg"
+>
+  チャット一覧へ
+</Link>
     </div>
   );
 }
