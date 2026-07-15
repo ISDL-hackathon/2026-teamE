@@ -94,8 +94,8 @@ async function handleNotificationClick(notification) {
       <div className="mx-auto max-w-3xl">
 
         <h1 className="mb-10 bg-gradient-to-r from-blue-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-center text-5xl font-extrabold text-transparent">
-          履歴・通知
-        </h1>
+  通知・履歴
+</h1>
 
         {notifications.length === 0 ? (
           <div className="rounded-3xl border border-slate-700 bg-slate-900/40 p-8 text-center text-slate-400">

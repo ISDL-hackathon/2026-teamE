@@ -213,6 +213,22 @@ export async function sendMessage(req, res) {
       });
     }
 
+    const { data: sender, error: senderError } = await supabase
+      .from("users")
+      .select("name")
+      .eq("id", req.user.id)
+      .maybeSingle();
+
+    if (senderError) {
+      return res.status(500).json({ error: senderError.message });
+    }
+
+    if (!sender) {
+      return res.status(401).json({
+        error: "送信者ユーザーが見つかりません",
+      });
+    }
+
     const { data: message, error: insertError } = await supabase
       .from("messages")
       .insert({
@@ -239,7 +255,7 @@ const { error: messageNotificationError } = await supabase
     actor_user_id: req.user.id,
     match_id: match.id,
     type: "MESSAGE",
-    message: "新しいメッセージが届きました。",
+    message: `${sender.name}さんから新しいメッセージが届きました。`,
   });
 
 if (messageNotificationError) {
