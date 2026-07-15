@@ -30,9 +30,9 @@ export default function TopSenior() {
        <section className="space-y-3">
   <Link
     to="/swipe"
-   className="group relative flex min-h-[90px] items-center gap-5 overflow-hidden rounded-xl border border-pink-400/90 bg-slate-950 px-5 shadow-[0_12px_30px_rgba(2,6,23,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-pink-300 before:absolute before:inset-y-0 before:left-0 before:w-2 before:bg-gradient-to-b before:from-rose-300 before:via-pink-400 before:to-fuchsia-500"
+    className="group relative flex min-h-[90px] items-center gap-5 overflow-hidden rounded-xl border border-indigo-400/90 bg-slate-950 px-5 shadow-[0_12px_30px_rgba(2,6,23,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-indigo-300 before:absolute before:inset-y-0 before:left-0 before:w-2 before:bg-gradient-to-b before:from-blue-400 before:via-indigo-400 before:to-violet-400"
   >
-    <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-pink-300 bg-pink-400/5 text-pink-300">
+    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-indigo-300 bg-indigo-400/5 text-indigo-300">
   <svg
     viewBox="0 0 48 48"
     fill="none"
@@ -40,7 +40,7 @@ export default function TopSenior() {
     strokeWidth="2.2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="h-16 w-16 -translate-x-1.5 overflow-visible"
+    className="h-14 w-14 -translate-x-1.5 -translate-y-0.5 overflow-visible"
     aria-hidden="true"
   >
     <path d="m22.5 36-11-10.1a7.6 7.6 0 0 1-.2-10.9 7.6 7.6 0 0 1 10.7-.1l1.4 1.4 1.4-1.4a7.6 7.6 0 0 1 10.7.1 7.6 7.6 0 0 1-.2 10.9L24.3 36a1.3 1.3 0 0 1-1.8 0Z" />
@@ -64,7 +64,7 @@ export default function TopSenior() {
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-8 w-8 shrink-0 text-pink-400 transition group-hover:translate-x-1"
+      className="h-8 w-8 shrink-0 text-indigo-400 transition group-hover:translate-x-1"
       aria-hidden="true"
     >
       <path d="m9 6 6 6-6 6" />
@@ -73,22 +73,22 @@ export default function TopSenior() {
 
   <Link
     to="/random"
-    className="group relative flex min-h-[90px] items-center gap-5 overflow-hidden rounded-xl border border border-sky-400/90 bg-slate-950 px-5 shadow-[0_12px_30px_rgba(2,6,23,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-sky-300 before:absolute before:inset-y-0 before:left-0 before:w-2 before:bg-gradient-to-b before:from-sky-400 before:via-blue-400 before:to-violet-400"
+    className="group relative flex min-h-[90px] items-center gap-5 overflow-hidden rounded-xl border border border-indigo-400/90 bg-slate-950 px-5 shadow-[0_12px_30px_rgba(2,6,23,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-indigo-300 before:absolute before:inset-y-0 before:left-0 before:w-2 before:bg-gradient-to-b before:from-blue-400 before:via-indigo-400 before:to-violet-400"
   >
-    <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-sky-300 bg-sky-400/5 text-sky-300 ">
+    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-indigo-300 bg-indigo-400/5 text-indigo-300">
   <svg
     viewBox="0 0 48 48"
     fill="none"
     strokeWidth="2.2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="h-16 w-16"
+    className="h-14 w-14 translate-y-1"
     aria-hidden="true"
   >
     <defs>
       <linearGradient id="random-icon-gradient" x1="8" y1="6" x2="42" y2="42">
-        <stop stopColor="#38bdf8" />
-        <stop offset="1" stopColor="#e879f9" />
+        <stop stopColor="#818cf8" />
+<stop offset="1" stopColor="#a78bfa" />
       </linearGradient>
     </defs>
 
@@ -137,7 +137,7 @@ export default function TopSenior() {
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-8 w-8 shrink-0 text-sky-400 transition group-hover:translate-x-1"
+      className="h-8 w-8 shrink-0 text-indigo-400 transition group-hover:translate-x-1"
       aria-hidden="true"
     >
       <path d="m9 6 6 6-6 6" />
