@@ -316,8 +316,16 @@ export default function Profile() {
 
         <button
           type="button"
+          onClick={() => navigate("/profile/password")}
+          className="mt-6 w-full rounded-xl border border-slate-600 bg-slate-900/40 px-4 py-3 font-medium text-slate-200"
+        >
+          パスワードを変更
+        </button>
+
+        <button
+          type="button"
           onClick={handleLogout}
-          className="mt-5 w-full rounded-xl border border-red-400/40 bg-red-950/30 px-4 py-3 font-medium text-red-300"
+          className="mt-3 w-full rounded-xl border border-red-400/40 bg-red-950/30 px-4 py-3 font-medium text-red-300"
         >
           ログアウト
         </button>

@@ -4,6 +4,7 @@
 // 前提: requireAuth 通過済み → req.user = { id, role } が使える
 // ============================================================
 import { supabase } from "../lib/supabase.js";
+import bcrypt from "bcryptjs";
 
 /**
  * GET /api/v1/me — 自分の情報取得
@@ -107,5 +108,49 @@ export async function updateProfile(req, res) {
     return res.status(500).json({
       error: "プロフィールの更新に失敗しました",
     });
+  }
+}
+
+
+/**
+ * PUT /api/v1/me/password — パスワード変更
+ * 入力: { current_password, new_password }
+ * 出力: 200 { ok: true } / 401 現在のパスワードが違う
+ */
+export async function changePassword(req, res) {
+  try {
+    const { current_password, new_password } = req.body;
+
+    if (!current_password || !new_password) {
+      return res.status(400).json({ error: "現在のパスワードと新しいパスワードを入力してください" });
+    }
+    if (new_password.length < 6) {
+      return res.status(400).json({ error: "新しいパスワードは6文字以上にしてください" });
+    }
+
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("password_hash")
+      .eq("id", req.user.id)
+      .maybeSingle();
+
+    if (error) return res.status(500).json({ error: error.message });
+    if (!user) return res.status(404).json({ error: "ユーザーが見つかりません" });
+
+    const ok = await bcrypt.compare(current_password, user.password_hash);
+    if (!ok) return res.status(401).json({ error: "現在のパスワードが違います" });
+
+    const newHash = await bcrypt.hash(new_password, 10);
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ password_hash: newHash })
+      .eq("id", req.user.id);
+
+    if (updateError) return res.status(500).json({ error: updateError.message });
+
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error("changePassword error:", error);
+    return res.status(500).json({ error: "パスワードの変更に失敗しました" });
   }
 }
