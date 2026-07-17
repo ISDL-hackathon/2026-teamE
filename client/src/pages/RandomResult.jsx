@@ -3,8 +3,8 @@
 // 責務: ランダムマッチング結果画面。今週話しかけるB4の名前を表示する。
 // 実装内容:
 //   - 表示時: await api("GET", "/random/current")
-//       → { b4: { id, name, bio, avatar_url }, week_key, status }
-//   - b4.name を大きく表示（bio やアバターも出すと良い）
+//       → { b4: { id, name, role, bio, avatar_url }, week_key, status }
+//   - 個人マッチングと同じプロフィールカードで相手を表示する
 //   - status が "ASSIGNED" のとき「話しました」ボタンを表示
 //       → api("POST", "/random/current/done") → 表示を DONE に切り替え
 //   - 404 のとき「今週の割り当てはまだありません」を表示
@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import SwipeCard from "../components/SwipeCard.jsx";
 
 export default function RandomResult() {
   const [assignment, setAssignment] = useState(null);
@@ -106,37 +107,27 @@ export default function RandomResult() {
       今週の相手
     </h1>
 
-    <div className="rounded-3xl border border-slate-700 bg-slate-900/40 p-10 text-center shadow-xl">
+    <div className="mx-auto max-w-sm">
+      <SwipeCard
+        user={assignment.b4}
+        onSwipeRight={() => {}}
+        onSwipeLeft={() => {}}
+      />
 
-      {assignment.b4.avatar_url && (
-        <img
-          src={assignment.b4.avatar_url}
-          alt={assignment.b4.name}
-          className="mx-auto mb-6 h-36 w-36 rounded-full border-4 border-indigo-400 object-cover"
-        />
-      )}
-
-      <h2 className="mb-4 text-4xl font-bold text-white">
-        {assignment.b4.name}
-      </h2>
-
-      <p className="mb-8 text-slate-300">
-        {assignment.b4.bio}
-      </p>
-
-      {assignment.status === "ASSIGNED" ? (
-        <button
-          onClick={markDone}
-          className="rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 px-10 py-4 text-xl font-bold text-white"
-        >
-          話しました
-        </button>
-      ) : (
-        <p className="text-2xl font-bold text-green-400">
-          話しました ✓
-        </p>
-      )}
-
+      <div className="mt-8 text-center">
+        {assignment.status === "ASSIGNED" ? (
+          <button
+            onClick={markDone}
+            className="rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 px-10 py-4 text-xl font-bold text-white"
+          >
+            話しました
+          </button>
+        ) : (
+          <p className="text-2xl font-bold text-green-400">
+            話しました ✓
+          </p>
+        )}
+      </div>
     </div>
 
   </div>
