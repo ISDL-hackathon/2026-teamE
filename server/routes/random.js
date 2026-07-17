@@ -13,7 +13,7 @@ import { currentWeekKey } from "./matching.js"; // week_key ユーティリテ�
 /**
  * GET /api/v1/random/current — 今週の自分の割り当て取得
  * 入力: なし（req.user.id / req.user.role を使う）
- * 出力: 200 { b4: { id, name, bio, avatar_url }, week_key: string,
+ * 出力: 200 { b4: { id, name, role, bio, avatar_url }, week_key: string,
  *             status: "ASSIGNED" | "DONE" }
  * エラー: 403 B4ユーザーが叩いた場合 / 404 今週の割り当てが未生成
  * 手順: ①role が B4 なら 403 ②currentWeekKey() で今週を求め
@@ -47,7 +47,7 @@ if (req.user.role === "B4") {
   // B4の情報を取得
   const { data: b4, error: userError } = await supabase
     .from("users")
-    .select("id, name, bio, avatar_url")
+    .select("id, name, role, bio, avatar_url")
     .eq("id", assignment.b4_id)
     .single();
 

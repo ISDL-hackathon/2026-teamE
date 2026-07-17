@@ -147,14 +147,31 @@ export default function SwipeScreen() {
     </button>
   </div>
 
-  <div className="mt-4 flex translate-x-5 flex-col items-center">
-  <p className="inline-block rounded-full border border-slate-700 bg-slate-900/80 px-5 py-2 text-center text-sm font-semibold text-sky-300">
-    残りいいね回数：{remaining}回
-  </p>
-  <p className="mt-1 text-xs text-slate-400">
-    （土曜0時にリセット）
-  </p>
-</div>
+  <div
+    className={`mt-4 flex items-center gap-3 ${
+      candidate?.avatar_url ? "justify-between" : "justify-center"
+    }`}
+  >
+    {candidate?.avatar_url && (
+      <div className="min-w-0">
+        <p className="truncate text-lg font-bold text-slate-300">
+          {candidate.name}
+        </p>
+        <p className="mt-0.5 text-xs font-semibold uppercase tracking-widest text-slate-500">
+          {candidate.role || "メンバー"}
+        </p>
+      </div>
+    )}
+
+    <div className="shrink-0 text-center">
+      <p className="inline-block rounded-full border border-slate-700 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-sky-300">
+        残りいいね回数：{remaining}回
+      </p>
+      <p className="mt-1 text-xs text-slate-400">
+        （土曜0時にリセット）
+      </p>
+    </div>
+  </div>
 </header>
 
     <div className="mt-4 space-y-3">
