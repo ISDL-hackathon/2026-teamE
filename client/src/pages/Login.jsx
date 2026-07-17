@@ -5,7 +5,7 @@ import { api, saveSession } from "../lib/api.js";
 export default function Login() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -14,8 +14,8 @@ export default function Login() {
     event.preventDefault();
     setErrorMessage("");
 
-    if (!email || !password) {
-      setErrorMessage("メールアドレスとパスワードを入力してください");
+    if (!name || !password) {
+      setErrorMessage("名前とパスワードを入力してください");
       return;
     }
 
@@ -23,7 +23,7 @@ export default function Login() {
       setIsSubmitting(true);
 
       const data = await api("POST", "/auth/login", {
-        email,
+        name,
         password,
       });
 
@@ -65,13 +65,13 @@ export default function Login() {
             className="mt-12 w-full max-w-2xl space-y-5"
           >
             <div className="flex items-center rounded-2xl border border-slate-600/70 bg-slate-900/35 px-5 py-4">
-              <span className="mr-4 text-2xl text-slate-400">✉</span>
+              <span className="mr-4 text-2xl text-slate-400">👤</span>
               <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="メールアドレス"
-                autoComplete="email"
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="名前"
+                autoComplete="name"
                 className="w-full bg-transparent text-lg text-white outline-none placeholder:text-slate-500"
               />
             </div>

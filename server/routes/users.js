@@ -16,7 +16,7 @@ export async function getMe(req, res) {
   try {
     const { data: user, error } = await supabase
       .from("users")
-      .select("id, name, email, role, bio, avatar_url, created_at")
+      .select("id, name, role, bio, avatar_url, created_at")
       .eq("id", req.user.id)
       .maybeSingle();
 
@@ -84,7 +84,7 @@ export async function updateProfile(req, res) {
       .from("users")
       .update(updates)
       .eq("id", req.user.id)
-      .select("id, name, email, role, bio, avatar_url, created_at")
+      .select("id, name, role, bio, avatar_url, created_at")
       .maybeSingle();
 
     if (error) {

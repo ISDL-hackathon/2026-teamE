@@ -5,25 +5,28 @@
 //        成功時は signToken() で JWT を発行して返す。
 // 使うもの: supabase（DB）, signToken（JWT発行）, bcryptjs
 // ============================================================
+import crypto from "node:crypto";
 import { supabase } from "../lib/supabase.js";
 import { signToken } from "../middleware/auth.js";
 import bcrypt from "bcryptjs";
 
 /**
  * POST /api/v1/auth/signup — 新規登録
- * 入力: req.body = { name: string, email: string, password: string,
+ * 入力: req.body = { name: string, password: string,
  *                    role: "B4" | "M1" | "M2" | "FACULTY" }
- * 出力: 201 { token: string, user: { id, name, email, role, bio, avatar_url } }
- * エラー: 400 入力不備 / 409 メール重複
+ * 出力: 201 { token: string, user: { id, name, role, bio, avatar_url } }
+ * エラー: 400 入力不備 / 409 名前重複
+ * 備考: DBの email 列は NOT NULL UNIQUE のままのため、
+ *       ユーザーには見せない内部用の値を自動生成して保存する。
  */
 export async function signup(req, res) {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, password, role } = req.body;
 
     // ① 入力チェック
-    if (!name || !email || !password || !role) {
+    if (!name || !password || !role) {
       return res.status(400).json({
-        error: "名前・メールアドレス・パスワード・役職を入力してください",
+        error: "名前・パスワード・役職を入力してください",
       });
     }
 
@@ -35,11 +38,11 @@ export async function signup(req, res) {
       });
     }
 
-    // ② メールアドレスの重複確認
+    // ② 名前の重複確認
     const { data: existingUser, error: searchError } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email)
+      .eq("name", name)
       .maybeSingle();
 
     if (searchError) {
@@ -50,23 +53,25 @@ export async function signup(req, res) {
 
     if (existingUser) {
       return res.status(409).json({
-        error: "このメールアドレスはすでに登録されています",
+        error: "この名前はすでに登録されています",
       });
     }
 
     // ③ パスワードをハッシュ化
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // ④ usersテーブルに登録
+    // ④ usersテーブルに登録（emailはDB制約を満たすための内部用ダミー値）
+    const internalEmail = `${crypto.randomUUID()}@isdlove.internal`;
+
     const { data: user, error: insertError } = await supabase
       .from("users")
       .insert({
         name,
-        email,
+        email: internalEmail,
         password_hash: passwordHash,
         role,
       })
-      .select("id, name, email, role, bio, avatar_url")
+      .select("id, name, role, bio, avatar_url")
       .single();
 
     if (insertError) {
@@ -96,26 +101,26 @@ export async function signup(req, res) {
 
 /**
  * POST /api/v1/auth/login — ログイン
- * 入力: req.body = { email: string, password: string }
- * 出力: 200 { token: string, user: { id, name, email, role, bio, avatar_url } }
- * エラー: 401 メールまたはパスワードが違う
+ * 入力: req.body = { name: string, password: string }
+ * 出力: 200 { token: string, user: { id, name, role, bio, avatar_url } }
+ * エラー: 401 名前またはパスワードが違う
  */
 export async function login(req, res) {
   try {
-    const { email, password } = req.body;
+    const { name, password } = req.body;
 
     // ① 入力チェック
-    if (!email || !password) {
+    if (!name || !password) {
       return res.status(400).json({
-        error: "メールアドレスとパスワードを入力してください",
+        error: "名前とパスワードを入力してください",
       });
     }
 
-    // ② emailでユーザー検索
+    // ② 名前でユーザー検索
     const { data: user, error: searchError } = await supabase
       .from("users")
-      .select("id, name, email, role, bio, avatar_url, password_hash")
-      .eq("email", email)
+      .select("id, name, role, bio, avatar_url, password_hash")
+      .eq("name", name)
       .maybeSingle();
 
     if (searchError) {
@@ -126,7 +131,7 @@ export async function login(req, res) {
 
     if (!user) {
       return res.status(401).json({
-        error: "メールアドレスまたはパスワードが違います",
+        error: "名前またはパスワードが違います",
       });
     }
 
@@ -138,7 +143,7 @@ export async function login(req, res) {
 
     if (!passwordMatches) {
       return res.status(401).json({
-        error: "メールアドレスまたはパスワードが違います",
+        error: "名前またはパスワードが違います",
       });
     }
 
