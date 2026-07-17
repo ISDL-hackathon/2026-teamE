@@ -29,6 +29,7 @@ import SwipeScreen from "./pages/SwipeScreen.jsx";
 import RandomIntro from "./pages/RandomIntro.jsx";
 import RandomResult from "./pages/RandomResult.jsx";
 import Profile from "./pages/Profile.jsx";
+import ChangePassword from "./pages/ChangePassword.jsx";
 import Notifications from "./pages/Notifications.jsx";
 import ChatList from "./pages/ChatList.jsx";
 import TalkRoom from "./pages/TalkRoom.jsx";
@@ -196,6 +197,7 @@ export default function App() {
   }
 />
         <Route path="/profile" element={<RequireLogin><Profile /></RequireLogin>} />
+        <Route path="/profile/password" element={<RequireLogin><ChangePassword /></RequireLogin>} />
         <Route path="/notifications" element={<RequireLogin><Notifications /></RequireLogin>} />
         <Route path="/chats" element={<RequireLogin><ChatList /></RequireLogin>} />
         <Route path="/chats/:matchId" element={<RequireLogin><TalkRoom /></RequireLogin>} />

@@ -13,7 +13,7 @@ import { requireAuth } from "./middleware/auth.js";
 
 // --- メンバー1: 認証・ユーザー ---
 import { signup, login } from "./routes/auth.js";
-import { getMe, updateProfile } from "./routes/users.js";
+import { getMe, updateProfile, changePassword } from "./routes/users.js";
 
 // --- メンバー2: 個人マッチング ---
 import { getCandidates, sendLike, getQuota } from "./routes/matching.js";
@@ -42,6 +42,7 @@ api.use(requireAuth);
 // ユーザー（メンバー1）
 api.get("/me", getMe);
 api.put("/me/profile", updateProfile);
+api.put("/me/password", changePassword);
 
 // 個人マッチング（メンバー2）
 api.get("/matching/candidates", getCandidates);
