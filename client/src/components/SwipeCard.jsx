@@ -47,11 +47,13 @@ export default function SwipeCard({ user, onSwipeRight, onSwipeLeft }) {
     setIsDragging(false);
 
     if (movedX >= SWIPE_THRESHOLD) {
+      setDragX(0);
       onSwipeRight();
       return;
     }
 
     if (movedX <= -SWIPE_THRESHOLD) {
+      setDragX(0);
       onSwipeLeft();
       return;
     }
