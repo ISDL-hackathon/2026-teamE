@@ -45,14 +45,14 @@ export async function getMe(req, res) {
 
 /**
  * PUT /api/v1/me/profile — プロフィール更新（保存ボタンで呼ばれる）
- * 入力: req.body = { name?: string, bio?: string, avatar_url?: string }
+ * 入力: req.body = { name?: string, bio?: string }
  *       ※ role / email は変更不可。渡されても無視する
  * 出力: 200 { user: 更新後のユーザー }
  * エラー: 400 入力不備
  */
 export async function updateProfile(req, res) {
   try {
-    const { name, bio, avatar_url } = req.body;
+    const { name, bio } = req.body;
 
     // 更新対象だけを入れる
     const updates = {};
@@ -73,11 +73,6 @@ export async function updateProfile(req, res) {
       updates.bio = bio;
     }
 
-    if (avatar_url !== undefined) {
-      updates.avatar_url = avatar_url;
-    }
-
-    // name / bio / avatar_url が1つも送られていない場合
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({
         error: "更新する項目がありません",

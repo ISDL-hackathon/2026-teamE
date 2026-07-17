@@ -18,15 +18,23 @@ export class ApiError extends Error {
 }
 
 export async function api(method, path, body) {
-  const headers = { "Content-Type": "application/json" };
+  const isFormData = body instanceof FormData;
+  const headers = isFormData ? {} : { "Content-Type": "application/json" };
+
   const token = localStorage.getItem("token");
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body:
+      body === undefined
+        ? undefined
+        : isFormData
+          ? body
+          : JSON.stringify(body),
   });
+
   const data = await res.json().catch(() => null);
   if (!res.ok) throw new ApiError(res.status, data);
   return data;

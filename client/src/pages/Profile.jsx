@@ -7,6 +7,13 @@ import {
   saveSession,
 } from "../lib/api.js";
 
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+const ACCEPTED_AVATAR_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
 export default function Profile() {
   const navigate = useNavigate();
 
@@ -15,6 +22,7 @@ export default function Profile() {
   const [role, setRole] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -47,6 +55,56 @@ export default function Profile() {
     loadProfile();
   }, []);
 
+  async function handleAvatarChange(event) {
+  const file = event.target.files?.[0];
+
+  // 同じ画像を選び直した場合にも change イベントが発生するようにする。
+  event.target.value = "";
+
+  if (!file) return;
+
+  if (!ACCEPTED_AVATAR_TYPES.has(file.type)) {
+    setErrorMessage("JPEG、PNG、WebP形式の画像を選択してください");
+    return;
+  }
+
+  if (file.size > MAX_AVATAR_BYTES) {
+    setErrorMessage("画像ファイルは5MB以下にしてください");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  try {
+    setIsUploadingAvatar(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    const data = await api("POST", "/me/avatar", formData);
+
+    setAvatarUrl(data.user.avatar_url ?? "");
+
+    const currentUser = getSessionUser();
+    const token = localStorage.getItem("token");
+
+    if (currentUser && token) {
+      saveSession(token, {
+        ...currentUser,
+        ...data.user,
+      });
+    }
+
+    setSuccessMessage("プロフィール画像を更新しました");
+  } catch (error) {
+    setErrorMessage(
+      error.message || "プロフィール画像のアップロードに失敗しました"
+    );
+  } finally {
+    setIsUploadingAvatar(false);
+  }
+}
+
   async function handleSubmit(event) {
     event.preventDefault();
     setErrorMessage("");
@@ -61,10 +119,9 @@ export default function Profile() {
       setIsSaving(true);
 
       const data = await api("PUT", "/me/profile", {
-        name: name.trim(),
-        bio,
-        avatar_url: avatarUrl,
-      });
+  name: name.trim(),
+  bio,
+});
 
       const currentUser = getSessionUser();
       const token = localStorage.getItem("token");
@@ -209,22 +266,32 @@ export default function Profile() {
           </div>
 
           <div>
-            <label
-              htmlFor="avatarUrl"
-              className="mb-2 block text-sm font-medium text-slate-200"
-            >
-              アイコン画像URL
-            </label>
+  <label
+    htmlFor="avatar"
+    className="mb-2 block text-sm font-medium text-slate-200"
+  >
+    プロフィール画像
+  </label>
 
-            <input
-              id="avatarUrl"
-              type="url"
-              value={avatarUrl}
-              onChange={(event) => setAvatarUrl(event.target.value)}
-              placeholder="https://example.com/avatar.png"
-              className="w-full rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-400"
-            />
-          </div>
+  <input
+    id="avatar"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    onChange={handleAvatarChange}
+    disabled={isUploadingAvatar}
+    className="block w-full cursor-pointer rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-sm text-slate-200 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-500 file:px-3 file:py-2 file:font-medium file:text-white hover:file:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+  />
+
+  <p className="mt-2 text-xs text-slate-400">
+    JPEG・PNG・WebP形式、5MB以下の画像を選択できます。
+  </p>
+
+  {isUploadingAvatar && (
+    <p className="mt-2 text-sm text-indigo-300">
+      画像をアップロードしています...
+    </p>
+  )}
+</div>
 
           {errorMessage && (
             <p className="rounded-xl border border-red-400/30 bg-red-950/40 px-4 py-3 text-sm text-red-300">
@@ -240,7 +307,7 @@ export default function Profile() {
 
           <button
             type="submit"
-            disabled={isSaving}
+            disabled={isSaving || isUploadingAvatar}
             className="w-full rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 px-4 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSaving ? "保存中..." : "保存"}
