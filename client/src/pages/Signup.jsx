@@ -6,7 +6,6 @@ export default function Signup() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("B4");
 
@@ -17,8 +16,8 @@ export default function Signup() {
     event.preventDefault();
     setErrorMessage("");
 
-    if (!name || !email || !password) {
-      setErrorMessage("氏名・メールアドレス・パスワードを入力してください");
+    if (!name || !password) {
+      setErrorMessage("氏名・パスワードを入力してください");
       return;
     }
 
@@ -27,7 +26,6 @@ export default function Signup() {
 
       const data = await api("POST", "/auth/signup", {
         name,
-        email,
         password,
         role,
       });
@@ -74,25 +72,6 @@ export default function Signup() {
               onChange={(event) => setName(event.target.value)}
               placeholder="村田 斉彬"
               autoComplete="name"
-              className="w-full rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-400"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-2 block text-sm font-medium text-slate-200"
-            >
-              メールアドレス
-            </label>
-
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="example@isdl.jp"
-              autoComplete="email"
               className="w-full rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-400"
             />
           </div>

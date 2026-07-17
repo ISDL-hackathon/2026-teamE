@@ -18,7 +18,6 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -39,7 +38,6 @@ export default function Profile() {
         const user = data.user;
 
         setName(user.name ?? "");
-        setEmail(user.email ?? "");
         setRole(user.role ?? "");
         setBio(user.bio ?? "");
         setAvatarUrl(user.avatar_url ?? "");
@@ -134,7 +132,6 @@ export default function Profile() {
       }
 
       setName(data.user.name ?? "");
-      setEmail(data.user.email ?? "");
       setRole(data.user.role ?? "");
       setBio(data.user.bio ?? "");
       setAvatarUrl(data.user.avatar_url ?? "");
@@ -209,23 +206,6 @@ export default function Profile() {
               value={name}
               onChange={(event) => setName(event.target.value)}
               className="w-full rounded-xl border border-slate-600 bg-slate-950/40 px-4 py-3 text-white outline-none focus:border-indigo-400"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-2 block text-sm font-medium text-slate-200"
-            >
-              メールアドレス
-            </label>
-
-            <input
-              id="email"
-              type="email"
-              value={email}
-              disabled
-              className="w-full cursor-not-allowed rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-500"
             />
           </div>
 
